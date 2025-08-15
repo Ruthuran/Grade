@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Student Marks Calculator</title>
+<title>Advanced Student Marks Calculator</title>
 
 <style>
-    /* Fancy animated background */
     body {
         margin: 0;
         font-family: 'Segoe UI', sans-serif;
@@ -24,56 +23,66 @@
         100% { background-position: 0% 50%; }
     }
 
-    /* Container card */
     .container {
         background: rgba(255, 255, 255, 0.1);
-        padding: 30px;
+        padding: 25px;
         border-radius: 20px;
         backdrop-filter: blur(10px);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        width: 350px;
+        width: 380px;
         color: #fff;
         text-align: center;
     }
 
     h1 {
-        margin-bottom: 20px;
-        font-size: 1.8rem;
-        letter-spacing: 1px;
+        margin-bottom: 15px;
     }
 
     label {
         display: block;
-        margin: 10px 0 5px;
         text-align: left;
+        margin-top: 10px;
     }
 
-    input[type="number"] {
+    input[type="number"], select {
         width: 100%;
         padding: 8px;
-        margin-bottom: 10px;
         border-radius: 8px;
         border: none;
-        outline: none;
+        margin-top: 5px;
         font-size: 1rem;
     }
 
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
     button {
-        width: 100%;
+        flex: 1;
         padding: 10px;
-        background: #00c6ff;
-        color: white;
         font-size: 1rem;
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: 0.3s;
     }
-    button:hover {
+    .calc-btn {
+        background: #00c6ff;
+        color: white;
+    }
+    .calc-btn:hover {
         background: #0073b1;
     }
+    .reset-btn {
+        background: #f44336;
+        color: white;
+    }
+    .reset-btn:hover {
+        background: #b71c1c;
+    }
 
-    /* Results box */
     .result {
         margin-top: 20px;
         background: rgba(0, 0, 0, 0.3);
@@ -98,54 +107,66 @@
 <body>
 
 <div class="container">
-    <h1>Student Marks Calculator</h1>
-    <form id="marksForm">
-        <label>Enter Marks 1:</label>
-        <input type="number" id="mark1" min="0" max="100" required>
-        
-        <label>Enter Marks 2:</label>
-        <input type="number" id="mark2" min="0" max="100" required>
-        
-        <label>Enter Marks 3:</label>
-        <input type="number" id="mark3" min="0" max="100" required>
-        
-        <label>Enter Marks 4:</label>
-        <input type="number" id="mark4" min="0" max="100" required>
-        
-        <label>Enter Marks 5:</label>
-        <input type="number" id="mark5" min="0" max="100" required>
+    <h1>Marks Calculator</h1>
+    
+    <label>Select Number of Subjects:</label>
+    <select id="subjectCount" onchange="generateFields()">
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+    </select>
 
-        <button type="button" onclick="calculate()">Calculate</button>
-    </form>
+    <form id="marksForm"></form>
+
+    <div class="buttons">
+        <button type="button" class="calc-btn" onclick="calculate()">Calculate</button>
+        <button type="button" class="reset-btn" onclick="resetForm()">Reset</button>
+    </div>
 
     <div id="resultBox" class="result" style="display: none;">
         <p id="total"></p>
         <p id="percentage"></p>
+        <p id="highest"></p>
+        <p id="lowest"></p>
         <p id="grade"></p>
     </div>
 </div>
 
 <script>
-function calculate() {
-    const marks = [
-        parseInt(document.getElementById("mark1").value),
-        parseInt(document.getElementById("mark2").value),
-        parseInt(document.getElementById("mark3").value),
-        parseInt(document.getElementById("mark4").value),
-        parseInt(document.getElementById("mark5").value)
-    ];
+function generateFields() {
+    const form = document.getElementById("marksForm");
+    form.innerHTML = "";
+    const count = parseInt(document.getElementById("subjectCount").value);
 
-    if (marks.some(isNaN)) {
-        alert("Please enter all marks.");
-        return;
+    for (let i = 1; i <= count; i++) {
+        form.innerHTML += `
+            <label>Enter Marks ${i}:</label>
+            <input type="number" id="mark${i}" min="0" max="100" required>
+        `;
+    }
+}
+generateFields();
+
+function calculate() {
+    const count = parseInt(document.getElementById("subjectCount").value);
+    let marks = [];
+
+    for (let i = 1; i <= count; i++) {
+        const val = parseInt(document.getElementById(`mark${i}`).value);
+        if (isNaN(val)) {
+            alert("Please fill all fields.");
+            return;
+        }
+        marks.push(val);
     }
 
     const total = marks.reduce((a, b) => a + b, 0);
     const percentage = total / marks.length;
+    const highest = Math.max(...marks);
+    const lowest = Math.min(...marks);
 
-    let gradeText = "";
-    let gradeClass = "";
-
+    let gradeText = "", gradeClass = "";
     if (percentage >= 91) { gradeText = "A"; gradeClass = "A"; }
     else if (percentage >= 81) { gradeText = "B"; gradeClass = "B"; }
     else if (percentage >= 71) { gradeText = "C"; gradeClass = "C"; }
@@ -155,9 +176,17 @@ function calculate() {
 
     document.getElementById("total").innerHTML = `<strong>Total:</strong> ${total}`;
     document.getElementById("percentage").innerHTML = `<strong>Percentage:</strong> ${percentage.toFixed(2)}%`;
+    document.getElementById("highest").innerHTML = `<strong>Highest Mark:</strong> ${highest}`;
+    document.getElementById("lowest").innerHTML = `<strong>Lowest Mark:</strong> ${lowest}`;
     document.getElementById("grade").innerHTML = `<strong>Grade:</strong> <span class="grade ${gradeClass}">${gradeText}</span>`;
 
     document.getElementById("resultBox").style.display = "block";
+}
+
+function resetForm() {
+    document.getElementById("subjectCount").value = "5";
+    generateFields();
+    document.getElementById("resultBox").style.display = "none";
 }
 </script>
 
